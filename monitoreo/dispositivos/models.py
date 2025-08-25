@@ -70,3 +70,10 @@ class Alerta(BaseModel):
 
     def __str__(self):
         return f"Alerta {self.tipo_alerta} - {self.dispositivo}"
+
+
+
+
+
+
+
