@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bienvenido</title>
+</head>
+<body>
+    <h1>Panel de dispositivos</h1>
+    <p>Consumo máximo permitido: {{ consumo_maximo }}w</p>
+
+    <ul>
+        {% for d in dispositivos %}
+            <li>
+                {{ d.nombre }} - {{ d.consumo }}w - 
+                {% if d.consumo <= consumo_maximo %}
+                    Correcto
+                {% else %}
+                    Exceso
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
