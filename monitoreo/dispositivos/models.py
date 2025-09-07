@@ -1,12 +1,12 @@
 from django.db import models
 
 class BaseModel(models.Model):
-    ESTADOS = [
-        ("ACTIVO", "Activo"),
-        ("INACTIVO", "Inactivo"),
+    STATUS = [
+        ("ACTIVE", "Active"),
+        ("INACTIVE", "Inactive"),
     ]
 
-    estado = models.CharField(max_length=10, choices=ESTADOS, default="ACTIVO")
+    status = models.CharField(max_length=10, choices=STATUS, default="ACTIVE")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
@@ -14,64 +14,75 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
+
 # ----------------------------
-# MODELOS
+# MODELS
 # ----------------------------
 
-class Categoria(BaseModel):
-    nombre = models.CharField(max_length=100)
-    descripcion = models.TextField(blank=True, null=True)
+class Organization(BaseModel):
+    name = models.CharField(max_length=100)
 
     def __str__(self):
-        return self.nombre
+        return self.name
 
 
-class Zona(BaseModel):
-    nombre = models.CharField(max_length=100)
-    descripcion = models.TextField(blank=True, null=True)
-
-    def __str__(self):
-        return self.nombre
-
-
-class Dispositivo(BaseModel):
-    nombre = models.CharField(max_length=100)
-    marca = models.CharField(max_length=100, blank=True, null=True)
-    modelo = models.CharField(max_length=100, blank=True, null=True)
-    potencia = models.IntegerField(help_text="Potencia en Watts", null=True, blank=True)
-    consumo_maximo = models.IntegerField(help_text="Consumo máximo permitido en kWh")
-    
-    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
-    zona = models.ForeignKey(Zona, on_delete=models.CASCADE)
+class Category(BaseModel):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.nombre} ({self.categoria})"
+        return self.name
 
 
-class Medicion(BaseModel):
-    dispositivo = models.ForeignKey(Dispositivo, on_delete=models.CASCADE)
-    fecha_hora = models.DateTimeField(auto_now_add=True)
-    consumo = models.FloatField(help_text="Consumo en kWh")
+class Zone(BaseModel):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.dispositivo} - {self.consumo} kWh"
+        return self.name
 
 
-class Alerta(BaseModel):
-    dispositivo = models.ForeignKey(Dispositivo, on_delete=models.CASCADE)
-    fecha_hora = models.DateTimeField(auto_now_add=True)
-    tipo_alerta = models.CharField(max_length=50)
-    mensaje = models.TextField()
-    estado_alerta = models.CharField(
+class Device(BaseModel):
+    name = models.CharField(max_length=100)
+    brand = models.CharField(max_length=100, blank=True, null=True)
+    model = models.CharField(max_length=100, blank=True, null=True)
+    power = models.IntegerField(help_text="Power in Watts", null=True, blank=True)
+    max_consumption = models.IntegerField(help_text="Maximum allowed consumption in kWh")
+
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    zone = models.ForeignKey(Zone, on_delete=models.CASCADE)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.name} ({self.category})"
+
+
+class Measurement(BaseModel):
+    device = models.ForeignKey(Device, on_delete=models.CASCADE)
+    measured_at = models.DateTimeField(auto_now_add=True)
+    value = models.FloatField(help_text="Consumption in kWh")
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.device} - {self.value} kWh"
+
+
+class Alert(BaseModel):
+    device = models.ForeignKey(Device, on_delete=models.CASCADE)
+    triggered_at = models.DateTimeField(auto_now_add=True)
+    type = models.CharField(max_length=50)
+    message = models.TextField()
+    alert_status = models.CharField(
         max_length=10,
-        choices=[("PENDIENTE", "Pendiente"), ("RESUELTA", "Resuelta")],
-        default="PENDIENTE"
+        choices=[("PENDING", "Pending"), ("RESOLVED", "Resolved")],
+        default="PENDING"
     )
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"Alerta {self.tipo_alerta} - {self.dispositivo}"
-
-
+        return f"Alert {self.type} - {self.device}"
 
 
 
