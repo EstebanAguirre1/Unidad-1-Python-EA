@@ -1,0 +1,117 @@
+<!-- dispositivos/templates/dispositivos/dashboard.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h2 class="mb-4">Dashboard</h2>
+
+    <!-- Tarjetas resumen: total, alertas, dispositivos por categoría y zona -->
+    <div class="row mb-4">
+
+        <!-- Total Dispositivos -->
+        <div class="col-md-3 mb-3">
+            <div class="card text-center border-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Total Dispositivos</h5>
+                    <p class="card-text display-4">{{ total_dispositivos }}</p>
+                    <a href="{% url 'listado_dispositivos' %}" class="btn btn-sm btn-primary">Ver más</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alertas Última Semana -->
+        <div class="col-md-3 mb-3">
+            <div class="card text-center border-danger">
+                <div class="card-body">
+                    <h5 class="card-title">Alertas Última Semana</h5>
+                    <p class="card-text display-4">{{ total_alertas_semana }}</p>
+                    <a href="{% url 'listado_alertas' %}" class="btn btn-sm btn-danger">Ver más</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dispositivos por Categoría -->
+        <div class="col-md-3 mb-3">
+            <div class="card text-center border-success">
+                <div class="card-body">
+                    <h5 class="card-title">Por Categoría</h5>
+                    {% for cat in dispositivos_por_categoria %}
+                        <p class="mb-1">{{ cat.category }}: {{ cat.total }}</p>
+                    {% empty %}
+                        <p>No hay datos</p>
+                    {% endfor %}
+                    <a href="{% url 'listado_dispositivos' %}" class="btn btn-sm btn-success">Ver más</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dispositivos por Zona -->
+        <div class="col-md-3 mb-3">
+            <div class="card text-center border-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Por Zona</h5>
+                    {% for z in dispositivos_por_zona %}
+                        <p class="mb-1">{{ z.zone }}: {{ z.total }}</p>
+                    {% empty %}
+                        <p>No hay datos</p>
+                    {% endfor %}
+                    <a href="{% url 'listado_dispositivos' %}" class="btn btn-sm btn-warning">Ver más</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Alertas por Severidad -->
+    <h4>Alertas por Severidad (Última Semana)</h4>
+    <div class="row mb-4">
+        {% for sev in alertas_por_severidad %}
+            <div class="col-md-4 mb-2">
+                <div class="card text-center 
+                    {% if sev.alert_status == 'Grave' %}border-danger
+                    {% elif sev.alert_status == 'Alto' %}border-warning
+                    {% else %}border-info{% endif %}">
+                    <div class="card-body">
+                        <h5>{{ sev.alert_status }}</h5>
+                        <p class="display-5">{{ sev.total }}</p>
+                        <a href="{% url 'listado_alertas' %}" class="btn btn-sm btn-outline-dark">Ver alertas</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p class="text-center">No hay alertas esta semana</p>
+        {% endfor %}
+    </div>
+
+    <!-- Últimas 10 Mediciones -->
+    <h4>Últimas 10 Mediciones</h4>
+    <table class="table table-striped table-bordered mb-4">
+        <thead class="table-dark">
+            <tr>
+                <th>Dispositivo</th>
+                <th>Valor (kWh)</th>
+                <th>Fecha</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if ultimas_10_mediciones %}
+                {% for m in ultimas_10_mediciones %}
+                    <tr>
+                        <td>{{ m.device.name }}</td>
+                        <td>{{ m.value }}</td>
+                        <td>{{ m.measured_at }}</td>
+                        <td><a href="{% url 'detalle_dispositivo' m.device.id %}">Ver más</a></td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="4" class="text-center">No hay mediciones registradas</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+</div>
+{% endblock %}

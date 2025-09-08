@@ -83,6 +83,9 @@ class Alert(BaseModel):
 
     def __str__(self):
         return f"Alert {self.type} - {self.device}"
+    
+
+
 
 
 
