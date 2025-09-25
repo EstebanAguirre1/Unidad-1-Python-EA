@@ -1,24 +1,40 @@
-"""
-URL configuration for monitoreo project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
-from django.urls import path
-from dispositivos.views import panel_dispositivos
+from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+from django.contrib.auth.decorators import login_required
+from dispositivos import views as disp_views
+from dispositivos.views import (
+    dashboard,               # Panel principal
+    listado_dispositivos,    # Listado de dispositivos
+    detalle_dispositivo,     # Detalle de un dispositivo
+    listado_mediciones,      # Listado global de mediciones
+    listado_alertas          # Resumen/listado de alertas
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', panel_dispositivos),
+    path('', include('dispositivos.urls')),
+    # Dashboard / panel principal
+    path('', login_required(dashboard), name='dashboard'),
+
+    # Dispositivos
+    path('dispositivos/', listado_dispositivos, name='listado_dispositivos'),
+    path('dispositivos/<int:device_id>/', detalle_dispositivo, name='detalle_dispositivo'),
+    path('dispositivos/', include('dispositivos.urls')),
+
+    # Mediciones
+    path('mediciones/', listado_mediciones, name='listado_mediciones'),
+
+    # Alertas
+    path('alertas/', listado_alertas, name='listado_alertas'),
+
+    # Usuarios
+    path('usuarios/', include('usuarios.urls')),
+    path('', login_required(disp_views.dashboard), name='dashboard'),
+
 ]
+
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

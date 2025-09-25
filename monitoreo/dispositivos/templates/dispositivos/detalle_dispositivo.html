@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Detalle del Dispositivo: {{ device.name }}</h2>
+
+    <!-- Información general -->
+    <ul class="list-group mb-3">
+        <li class="list-group-item"><strong>Categoría:</strong> {{ device.category.name }}</li>
+        <li class="list-group-item"><strong>Zona:</strong> {{ device.zone.name }}</li>
+        <li class="list-group-item"><strong>Organización:</strong> {{ device.organization.name }}</li>
+        <li class="list-group-item"><strong>Potencia:</strong> {{ device.power|default:"No disponible" }} W</li>
+        <li class="list-group-item"><strong>Consumo máximo:</strong> {{ device.max_consumption }} kWh</li>
+    </ul>
+
+    <!-- Mediciones -->
+    <h4>Mediciones</h4>
+    {% if mediciones %}
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Valor (kWh)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in mediciones %}
+                <tr>
+                    <td>{{ m.measured_at|date:"d-m-Y H:i" }}</td>
+                    <td>{{ m.value }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-secondary">No hay mediciones disponibles.</div>
+    {% endif %}
+
+    <!-- Alertas -->
+    <h4>Alertas</h4>
+    {% if alertas %}
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Tipo</th>
+                    <th>Mensaje</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in alertas %}
+                <tr>
+                    <td>{{ a.triggered_at|date:"d-m-Y H:i" }}</td>
+                    <td>{{ a.type }}</td>
+                    <td>{{ a.message }}</td>
+                    <td>{{ a.alert_status }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-secondary">No hay alertas disponibles.</div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -5,18 +5,15 @@
 </head>
 <body>
     <h1>Panel de dispositivos</h1>
-    <p>Consumo máximo permitido: {{ consumo_maximo }}w</p>
+    
 
     <ul>
         {% for d in dispositivos %}
-            <li>
-                {{ d.nombre }} - {{ d.consumo }}w - 
-                {% if d.consumo <= consumo_maximo %}
-                    Correcto
-                {% else %}
-                    Exceso
-                {% endif %}
+            <li>{{ d.nombre }} - {{ d.categoria }}  {{ d.categoria.estado }} 
+                ir a <a href="{% url 'dispositivo' d.id %}">Detalle</a>
             </li>
+            {% empty %}
+            </li>No hay dispositivos.</li>
         {% endfor %}
     </ul>
 </body>

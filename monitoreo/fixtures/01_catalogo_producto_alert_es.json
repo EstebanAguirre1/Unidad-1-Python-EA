@@ -1,0 +1,43 @@
+[
+  {
+    "model": "dispositivos.category",
+    "pk": 1,
+    "fields": {
+      "name": "Iluminación",
+      "status": "ACTIVE",
+      "created_at": "2025-09-14T00:00:00Z",
+      "updated_at": "2025-09-14T00:00:00Z",
+      "deleted_at": null
+    }
+  },
+  {
+    "model": "dispositivos.category",
+    "pk": 2,
+    "fields": {
+      "name": "Otro ejemplo",
+      "status": "ACTIVE",
+      "created_at": "2025-09-14T00:00:00Z",
+      "updated_at": "2025-09-14T00:00:00Z",
+      "deleted_at": null
+    }
+  },
+  {
+    "model": "dispositivos.product",
+    "pk": 1,
+    "fields": {
+      "name": "Panel LED 40W",
+      "category": 1,
+      "sku": "LED-40W",
+      "manufacturer": "EcoLuz",
+      "model_name": "PL-40",
+      "description": "Panel LED para oficinas con alta eficiencia.",
+      "nominal_voltage_v": 220.0,
+      "max_current_a": 0.25,
+      "standby_power_w": 1.0,
+      "status": "ACTIVE",
+      "created_at": "2025-09-14T00:00:00Z",
+      "updated_at": "2025-09-14T00:00:00Z",
+      "deleted_at": null
+    }
+  }
+]
