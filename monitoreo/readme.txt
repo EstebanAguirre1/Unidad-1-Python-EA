@@ -42,6 +42,13 @@ Clonar repositorio:
 
 git clone [tu-repo-url]
 cd Unidad-1-Python-EA
+
+Cambiar de rama:
+git checkout -b nombre-de-rama origin/nombre-de-rama
+
+Ver ramas remotas disponibles:
+git branch -r
+
 Crear entorno virtual:
 
 
