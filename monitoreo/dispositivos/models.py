@@ -3,6 +3,7 @@
 #'''
 from django.db import models
 from django.db.models import Q, F
+from organizations.models import Organization
 
 
 class BaseModel(models.Model):
@@ -22,14 +23,7 @@ class BaseModel(models.Model):
 
 # ----------------------------
 # MODELS
-# ----------------------------
-
-class Organization(BaseModel):
-    name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
-
+# ---------------------------
 
 class Category(BaseModel):
     name = models.CharField(max_length=100)
@@ -223,7 +217,11 @@ class ProductAlertRule(BaseModel):
 class Zone(BaseModel):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    organization = models.ForeignKey(
+    "organizations.Organization",  # referencia en string para evitar import circular
+    on_delete=models.CASCADE,
+    related_name="zones"           # opcional, útil para acceder a las zonas desde Organization
+)
 
     def __str__(self):
         return self.name
@@ -270,13 +268,3 @@ class Alert(BaseModel):
     def __str__(self):
         return f"Alert {self.type} - {self.device}"
     
-
-
-
-
-
-
-
-
-        
-#'''

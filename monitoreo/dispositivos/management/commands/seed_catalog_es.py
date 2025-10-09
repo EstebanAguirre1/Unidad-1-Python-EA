@@ -1,5 +1,7 @@
 from django.core.management.base import BaseCommand
-from dispositivos.models import Category, Product, AlertRule, ProductAlertRule, Organization, Zone, Device
+from dispositivos.models import Category, Product, AlertRule, ProductAlertRule, Zone, Device
+from organizations.models import Organization
+
 
 class Command(BaseCommand):
     help = "Carga catálogo en español (categorías, productos, alertas y overrides)"

@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import Category, Zone, Device, Measurement, Alert, Organization, Product, AlertRule, ProductAlertRule
+from dispositivos.models import Device
+from usuarios.models import Usuario
+from .models import Category, Zone, Device, Measurement, Alert, Product, AlertRule, ProductAlertRule
 
 # ─────────────────────────────────────────────────────────
 # Reglas generales del sitio (NUEVO)
@@ -9,16 +11,20 @@ admin.site.site_title = "EcoEnergy Admin"
 admin.site.index_title = "Panel de administración"
 
 # ─────────────────────────────────────────────────────────
+# ACCIONES PERSONALIZADAS
+# ─────────────────────────────────────────────────────────
+@admin.action(description="Activar dispositivos seleccionados")
+def make_active(modeladmin, request, queryset):
+    queryset.update(status="ACTIVE")
+
+@admin.action(description="Desactivar dispositivos seleccionados")
+def make_inactive(modeladmin, request, queryset):
+    queryset.update(status="INACTIVE")
+
+
+# ─────────────────────────────────────────────────────────
 # MAESTROS (globales)
 # ─────────────────────────────────────────────────────────
-
-@admin.register(Organization)
-class OrganizationAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'status', 'created_at']
-    search_fields = ['name']
-    list_filter = ['status']
-    ordering = ['name']
-    list_per_page = 50
 
 @admin.register(Zone)
 class ZoneAdmin(admin.ModelAdmin):
@@ -64,14 +70,54 @@ class ProductAlertRuleAdmin(admin.ModelAdmin):
     list_select_related = ['product', 'alert_rule']
     list_per_page = 50
 
+
+
 @admin.register(Device)
 class DeviceAdmin(admin.ModelAdmin):
-    list_display = ['name', 'category', 'zone', 'max_consumption', 'status', 'created_at']
+    # Columnas que se muestran en la lista
+    list_display = [
+        'name', 'organization', 'category', 'zone', 'power', 'max_consumption',
+        'status', 'created_at'
+    ]
+    # Campos por los que se puede buscar
     search_fields = ['name', 'category__name', 'zone__name']
+    # Filtros laterales
     list_filter = ['status', 'category', 'zone']
+    # Orden por defecto
     ordering = ['name']
+    # Optimización: carga relacionada
     list_select_related = ['category', 'zone']
+    # Paginación
     list_per_page = 50
+    # Acciones personalizadas
+    actions = [make_active, make_inactive]
+
+    # 🔹 Filtrar los objetos que aparecen en la lista del admin
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        try:
+            return qs.filter(organization=request.user.usuario.organization)
+        except AttributeError:
+            return qs.none()
+
+    # 🔹 Limitar opciones en los selects (zone, category) al editar/crear
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if not request.user.is_superuser:
+            try:
+                org = request.user.usuario.organization
+                if db_field.name == "zone":
+                    kwargs["queryset"] = Zone.objects.filter(organization=org)
+                elif db_field.name == "category":
+                    kwargs["queryset"] = Category.objects.filter(organization=org)
+            except AttributeError:
+                kwargs["queryset"] = db_field.related_model.objects.none()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+
+
 
 @admin.register(Measurement)
 class MeasurementAdmin(admin.ModelAdmin):

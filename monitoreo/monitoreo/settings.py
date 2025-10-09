@@ -43,9 +43,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'dispositivos',
-    'usuarios',
     'organizations',
+    'usuarios',
+    'dispositivos',
 ]
 
 MIDDLEWARE = [
@@ -151,5 +151,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # Redirección de login y logout
 LOGIN_URL = '/usuarios/login/'
-LOGIN_REDIRECT_URL = '/'  # dashboard
-LOGOUT_REDIRECT_URL = 'login'
+LOGIN_REDIRECT_URL = '/admin/'  # puedes poner otra ruta si quieres un dashboard custom
+# Redirige a la página de login del admin o al home seguro después de cerrar sesión
+LOGOUT_REDIRECT_URL = '/admin/login/'  # ruta al login del admin
