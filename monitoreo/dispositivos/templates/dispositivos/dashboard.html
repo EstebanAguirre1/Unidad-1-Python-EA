@@ -1,11 +1,34 @@
-<!-- dispositivos/templates/dispositivos/dashboard.html -->
 {% extends "base.html" %}
 
 {% block content %}
-    <h1 class="h4">Dashboard</h1>
-    <p>Bienvenido/a, {{ user.username }}. Aquí va el resumen (mediciones, dispositivos, alertas...).</p>
+  <h1 class="h4">Dashboard</h1>
+  <p>Bienvenido/a, {{ user.username }}.</p>
+  <p>Has visitado esta página {{ visitas }} veces durante esta sesión.</p>
 
-{% endblock content %}
+  <!-- Mostrar mensajes flash (éxito / error / advertencia) -->
+  {% if messages %}
+    <div class="container mt-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Listado de dispositivos -->
+  {% for p in dispositivos %}
+    <div class="card p-3 mb-3">
+      <h5>{{ p.nombre }}</h5>
+      <p>Stock: {{ p.stock }}</p>
+      <a href="{% url 'add_to_cart' p.id %}" class="btn btn-primary btn-sm">Agregar al carrito</a>
+    </div>
+  {% empty %}
+    <p>No hay dispositivos disponibles.</p>
+  {% endfor %}
+
+
 
     <!-- Tarjetas resumen: total, alertas, dispositivos por categoría y zona -->
     <div class="row mb-4">
@@ -116,3 +139,4 @@
 
 </div>
 
+{% endblock %}

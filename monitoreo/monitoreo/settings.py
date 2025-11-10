@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from django.contrib.messages import constants as msg
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -149,8 +150,42 @@ MEDIA_URL = '/media/'
 
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Redirección de login y logout
-LOGIN_URL = '/usuarios/login/'
-LOGIN_REDIRECT_URL = '/admin/'  # puedes poner otra ruta si quieres un dashboard custom
-# Redirige a la página de login del admin o al home seguro después de cerrar sesión
-LOGOUT_REDIRECT_URL = '/admin/login/'  # ruta al login del admin
+# --- Redirecciones generales ---
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/login/'
+
+# --- Admin: mantiene su propio login/logout ---
+ADMIN_SITE_LOGIN_URL = '/admin/login/'
+ADMIN_SITE_LOGOUT_URL = '/admin/logout/'
+
+
+
+# Configuraciones de sesión
+
+# duración de la cookie de sesión (en segundos)
+SESSION_COOKIE_AGE = 60*60*2 # 2 horas 
+# sesión expira al cerrar el navegador?
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+# cada vez que se hace una petición, se actualiza la expiración
+SESSION_SAVE_EVERY_REQUEST = False
+# seguridad de las cookies
+SESSION_COOKIE_SECURE = True # en producción con HTTPS
+# sólo enviar la cookie en el mismo sitio (protección CSRF) / Lax por defecto en Django
+SESSION_COOKIE_SAMESITE = 'Lax' # o 'Strict'/'None'(+Secure)
+
+
+
+
+MESSAGE_TAGS = {
+    msg.DEBUG: 'secondary',
+    msg.INFO: 'info',
+    msg.SUCCESS: 'success',
+    msg.WARNING: 'warning',
+    msg.ERROR: 'danger',  # Bootstrap usa 'danger'
+}
+
+
+# Páginas de error personalizadas
+handler403 = 'dispositivos.views.error_403'
+handler404 = 'dispositivos.views.error_404'

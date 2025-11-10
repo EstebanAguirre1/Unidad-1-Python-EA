@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ accion }} Dispositivo{% endblock %}
+
+{% block content %}
+<div class="container mt-3">
+    <h3>{{ accion }} Dispositivo</h3>
+
+    <!-- Mensajes Django -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert 
+                {% if message.tags == 'error' %}alert-danger
+                {% elif message.tags == 'success' %}alert-success
+                {% else %}alert-info{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="mb-3">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.errors %}
+                    <div class="text-danger">
+                        {% for error in field.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+        <button class="btn btn-success" type="submit">Guardar</button>
+        <a href="{% url 'listado_dispositivos' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

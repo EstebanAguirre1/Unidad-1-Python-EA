@@ -234,6 +234,7 @@ class Device(BaseModel):
     power = models.IntegerField(help_text="Power in Watts", null=True, blank=True)
     max_consumption = models.IntegerField(help_text="Maximum allowed consumption in kWh")
     image = models.ImageField(upload_to='dispositivos/', null=True, blank=True)
+    stock = models.IntegerField(default=0)
 
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     zone = models.ForeignKey(Zone, on_delete=models.CASCADE)

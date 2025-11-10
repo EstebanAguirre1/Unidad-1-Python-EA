@@ -4,12 +4,16 @@ from django.db import models
 from dispositivos.models import Organization
 
 
+def avatar_upload_path(instance, filename):
+    return f"avatars/user_{instance.user.id}/{filename}"
+
 class Usuario(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     organization = models.ForeignKey(Organization, on_delete=models.PROTECT)
     rut = models.CharField(max_length=12, unique=True)
     telefono = models.CharField(max_length=20, blank=True)
     direccion = models.TextField(blank=True)
+    avatar = models.ImageField(upload_to=avatar_upload_path, blank=True, null=True)  # <--- Nuevo campo
 
     # Conecta con el rol real
     role = models.ForeignKey('Role', null=True, blank=True, on_delete=models.SET_NULL, related_name="usuarios")

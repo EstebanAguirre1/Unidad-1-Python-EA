@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Listado de Zonas{% endblock %}
+
+{% block content %}
+<div class="container mt-3">
+
+    <!-- Mensajes de Django -->
+    {% if messages %}
+    <div class="mb-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Encabezado y botón Nueva Zona -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>Listado de Zonas</h3>
+        {% if perms.devices.add_zone %}
+        <a href="{% url 'zona_create' %}" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-plus"></i> Nueva Zona
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Buscador y opciones -->
+    <form class="d-flex mb-3" method="get">
+        <input class="form-control me-2" type="search" name="q" placeholder="Buscar por nombre u organización" value="{{ q }}">
+        <select class="form-select me-2" name="paginate_by" onchange="this.form.submit()">
+            {% for val in paginate_options %}
+                <option value="{{ val }}" {% if paginate_by == val %}selected{% endif %}>{{ val }}</option>
+            {% endfor %}
+        </select>
+        <button class="btn btn-primary me-2" type="submit">Buscar</button>
+        {% if q %}
+            <a href="{% url 'zona_list' %}" class="btn btn-outline-secondary">Limpiar</a>
+        {% endif %}
+        <input type="hidden" name="sort" value="{{ sort }}">
+        <input type="hidden" name="direction" value="{{ direction }}">
+    </form>
+
+    <!-- Tabla -->
+    <table class="table table-hover align-middle" id="tablaZonas">
+        <thead class="table-light">
+            <tr>
+                <th>#</th>
+                <th>
+                    <a href="?sort=name&direction={% if sort == 'name' and direction == 'asc' %}desc{% else %}asc{% endif %}&q={{ q }}&paginate_by={{ paginate_by }}">
+                        Nombre
+                        {% if sort == 'name' %}
+                            <i class="fa-solid fa-arrow-up{% if direction == 'desc' %}-short-wide fa-rotate-180{% endif %}"></i>
+                        {% endif %}
+                    </a>
+                </th>
+                <th>
+                    <a href="?sort=organization&direction={% if sort == 'organization' and direction == 'asc' %}desc{% else %}asc{% endif %}&q={{ q }}&paginate_by={{ paginate_by }}">
+                        Organización
+                        {% if sort == 'organization' %}
+                            <i class="fa-solid fa-arrow-up{% if direction == 'desc' %}-short-wide fa-rotate-180{% endif %}"></i>
+                        {% endif %}
+                    </a>
+                </th>
+                {% if perms.devices.change_zone or perms.devices.delete_zone %}
+                <th style="width: 140px">Acciones</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for z in page_obj.object_list %}
+            <tr id="row-{{ z.id }}">
+                <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
+                <td class="zona-name">{{ z.name }}</td>
+                <td>{{ z.organization.name }}</td>
+                {% if perms.devices.change_zone or perms.devices.delete_zone %}
+                <td>
+                    {% if perms.devices.change_zone %}
+                    <a href="{% url 'zona_edit' z.id %}" class="btn btn-warning btn-sm">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </a>
+                    {% endif %}
+                    {% if perms.devices.delete_zone %}
+                    <button class="btn btn-danger btn-sm btn-delete"
+                            data-id="{{ z.id }}"
+                            data-url="{% url 'zona_delete_ajax' z.id %}">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                    {% endif %}
+                </td>
+                {% endif %}
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center">No hay zonas registradas.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Paginación -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&sort={{ sort }}&direction={{ direction }}&paginate_by={{ paginate_by }}">Anterior</a>
+            </li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% else %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}&q={{ q }}&sort={{ sort }}&direction={{ direction }}&paginate_by={{ paginate_by }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ q }}&sort={{ sort }}&direction={{ direction }}&paginate_by={{ paginate_by }}">Siguiente</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    // CSRF helper
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(";").shift();
+    }
+    const csrftoken = getCookie("csrftoken");
+
+    // Delegación de eventos para botones borrar
+    document.addEventListener("click", async (ev) => {
+        const btn = ev.target.closest(".btn-delete");
+        if (!btn) return;
+
+        const row = btn.closest("tr");
+        const url = btn.dataset.url;
+        const nombre = row.querySelector(".zona-name")?.textContent?.trim() || "la zona";
+
+        const confirm = await Swal.fire({
+            title: `¿Eliminar ${nombre}?`,
+            text: "Esta acción no se puede deshacer.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Sí, eliminar",
+            cancelButtonText: "Cancelar",
+        });
+
+        if (!confirm.isConfirmed) return;
+
+        try {
+            const resp = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": csrftoken,
+                    "X-Requested-With": "XMLHttpRequest",
+                    Accept: "application/json",
+                },
+            });
+
+            if (!resp.ok) throw new Error(await resp.text() || "Error HTTP");
+
+            const data = await resp.json();
+            if (data.ok) {
+                row.remove();
+
+                // Reindexar filas
+                Array.from(document.querySelectorAll("#tablaZonas tbody tr")).forEach((tr, i) => {
+                    tr.children[0].textContent = (i + 1).toString();
+                });
+
+                Swal.fire({
+                    icon: "success",
+                    title: data.message,
+                    timer: 1800,
+                    showConfirmButton: false,
+                });
+            } else {
+                Swal.fire({ icon: "error", title: data.message || "No se pudo eliminar" });
+            }
+        } catch (err) {
+            Swal.fire({ icon: "error", title: "Error al eliminar", text: err.message });
+        }
+    });
+</script>
+{% endblock %}
